@@ -14,9 +14,12 @@ if (sys.version_info < (3, 0)):
     sys.exit()
 from py_astro_accelerate import *
 
-
 # Open filterbank file for reading metadata and signal data
-sigproc_input = aa_py_sigproc_input("/home/novotny/filterbank/injectfrb_nfrb500_DM20-1992_5183sec_20190610-1710.fil")
+if len(sys.argv)!= 2:
+    print("Not enough arguments for run. Please provide the filterbank file as an argument")
+    sys.exit()
+filedata = str(sys.argv[1])
+sigproc_input = aa_py_sigproc_input(filedata)
 metadata = sigproc_input.read_metadata()
 if not sigproc_input.read_signal():
     print("ERROR: Invalid .fil file path. Exiting...")
@@ -101,6 +104,8 @@ while (pipeline.run()):
 
 #write the Maximum candidate to the disk and print to the console
 SPD.write_maximum(DM, SNR, TIME, TS, WIDTH)
+
+pipeline.cleanUp()
 
 # Cleaning the plans
 del ddtr_plan
