@@ -53,10 +53,10 @@ pipeline_components.analysis = True
 sigma_cutoff = 6
 sigma_constant = 4.0
 max_boxcar_width_in_sec = 0.5
-candidate_algorithm = False
+enable_threshold_candidate_selection = False
 enable_msd_baseline_noise = True
 
-analysis_plan = aa_py_analysis_plan(sigma_cutoff, sigma_constant, max_boxcar_width_in_sec, candidate_algorithm, enable_msd_baseline_noise)
+analysis_plan = aa_py_analysis_plan(sigma_cutoff, sigma_constant, max_boxcar_width_in_sec, enable_threshold_candidate_selection, enable_msd_baseline_noise)
 analysis_plan.print_info()
 
 # Set up pipeline component options
