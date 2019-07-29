@@ -89,6 +89,7 @@ while (pipeline.run()):
         print("Number of candidates", nCandidates)
         start = time.time()
         if (nCandidates > 0):
+            SPD.write_candidates("AstroAccelerate-SPS-result", metadata, pipeline, ddtr_plan, ts_inc, nCandidates, dm, ts, snr, width, c_range, c_tchunk)
             (tmp_dm, tmp_snr, tmp_time_sample, tmp_time, tmp_width) = SPD.maximum(metadata, pipeline, ddtr_plan, ts_inc, nCandidates, dm, ts, snr, width, c_range, c_tchunk)
         DM.append(tmp_dm)
         SNR.append(tmp_snr)
