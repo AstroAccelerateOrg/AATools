@@ -1,6 +1,6 @@
 # AATools
 
-Collection of potential useful scripts (Gnuplot, python, R, etc.) for AstroAccelerate.
+Collection of potential useful scripts (gnuplot, python, R, etc.) for AstroAccelerate.
 
 ## Guides for the scripts
 ### Gnuplot/ts-box.gp
