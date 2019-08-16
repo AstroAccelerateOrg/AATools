@@ -35,8 +35,8 @@ dm4 = aa_py_dm(500, 900, 0.4, 2, 2)
 dm5 = aa_py_dm(900, 1200, 0.6, 4, 4)
 dm6 = aa_py_dm(1200, 1500, 0.8, 4, 4)
 dm7 = aa_py_dm(1500, 2000, 1.0, 4, 4)
-dm8 = aa_py_dm(2000, 3000, 2.0, 8, 8)
-dm_list = np.array([dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8],dtype=aa_py_dm)
+#dm8 = aa_py_dm(2000, 3000, 2.0, 8, 8)
+dm_list = np.array([dm1, dm2, dm3, dm4, dm5, dm6, dm7],dtype=aa_py_dm)
 
 # Create ddtr_plan
 ddtr_plan = aa_py_ddtr_plan(dm_list)
@@ -53,7 +53,8 @@ pipeline_components.analysis = True
 sigma_cutoff = 6
 sigma_constant = 4.0
 max_boxcar_width_in_sec = 0.5
-enable_threshold_candidate_selection = False
+# 0 -- peak_find; 1 -- threshold; 2 -- peak_filtering
+enable_threshold_candidate_selection = 2
 enable_msd_baseline_noise = True
 
 analysis_plan = aa_py_analysis_plan(sigma_cutoff, sigma_constant, max_boxcar_width_in_sec, enable_threshold_candidate_selection, enable_msd_baseline_noise)
@@ -62,6 +63,7 @@ analysis_plan.print_info()
 # Set up pipeline component options
 pipeline_options = aa_py_pipeline_component_options()
 pipeline_options.output_dmt = False
+pipeline_options.copy_ddtr_data_to_host = False;
 
 # Select GPU card number on this machine
 card_number = 0
@@ -86,11 +88,9 @@ while (pipeline.run()):
         (nCandidates, dm, ts, snr, width, c_range, c_tchunk, ts_inc)=pipeline.get_candidates()
         end = time.time()
         print(bcolors.WARNING + "Time to read: " + str(end - start) + bcolors.ENDC)
-        print("Number of candidates", nCandidates)
         start = time.time()
         if (nCandidates > 0):
-            SPD.write_candidates("AstroAccelerate-SPS-result", metadata, pipeline, ddtr_plan, ts_inc, nCandidates, dm, ts, snr, width, c_range, c_tchunk)
-            (tmp_dm, tmp_snr, tmp_time_sample, tmp_time, tmp_width) = SPD.maximum(metadata, pipeline, ddtr_plan, ts_inc, nCandidates, dm, ts, snr, width, c_range, c_tchunk)
+            (tmp_dm, tmp_snr, tmp_time_sample, tmp_time, tmp_width) = SPD.scale(metadata, pipeline, ddtr_plan, ts_inc, nCandidates, dm, ts, snr, width, c_range, c_tchunk)
         DM.append(tmp_dm)
         SNR.append(tmp_snr)
         TS.append(tmp_time_sample)
@@ -103,8 +103,10 @@ while (pipeline.run()):
         print("ERROR: Pipeline status code is {}. The pipeline encountered an error and cannot continue.".format(pipeline.status_code()))
         break
 
-#write the Maximum candidate to the disk and print to the console
-SPD.write_maximum(DM, SNR, TIME, TS, WIDTH)
+with open('output', 'w') as f:
+    for x in range(0,len(DM)):
+        for y in range(0,len(DM[x])):
+            f.write('{} {} {} {}\n'.format(DM[x][y], SNR[x][y], TIME[x][y], WIDTH[x][y]))
 
 pipeline.cleanUp()
 
