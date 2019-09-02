@@ -1,0 +1,5 @@
+It is a experimental test of new way to run the autotune. It needs to have a file with all possible hash define parameters per line. Launching example:
+
+./profiling-new.sh ~/input_files/ska_profile_2048-16bit.txt ~/input_files/ska_input-32bit-2048ch.txt
+
+where the first argument is the file with the combination for autotune, the second is the plan.
