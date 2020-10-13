@@ -91,11 +91,11 @@ while (pipeline.run()):
         start = time.time()
         if (nCandidates > 0):
             (tmp_dm, tmp_snr, tmp_time_sample, tmp_time, tmp_width) = SPD.scale(metadata, pipeline, ddtr_plan, ts_inc, nCandidates, dm, ts, snr, width, c_range, c_tchunk)
-        DM.append(tmp_dm)
-        SNR.append(tmp_snr)
-        TS.append(tmp_time_sample)
-        TIME.append(tmp_time)
-        WIDTH.append(tmp_width)
+            DM.append(tmp_dm)
+            SNR.append(tmp_snr)
+            TS.append(tmp_time_sample)
+            TIME.append(tmp_time)
+            WIDTH.append(tmp_width)
         end = time.time()
         # Write the candidates to disk
         print(bcolors.WARNING + "Time to find maximum: " + str(end - start) + bcolors.ENDC)
