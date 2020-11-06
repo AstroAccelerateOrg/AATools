@@ -31,16 +31,16 @@ input_buffer = sigproc_input.input_buffer()
 
 # ddtr_plan settings
 # settings: aa_py_dm(low, high, step, inBin, outBin)
-dm1 = aa_py_dm(400, 550, 0.15, 1, 1)
-#dm2 = aa_py_dm(150, 300, 0.2, 1, 1)
-#dm3 = aa_py_dm(300, 500, 0.25, 1, 1)
-#dm4 = aa_py_dm(500, 900, 0.4, 2, 2)
-#dm5 = aa_py_dm(900, 1200, 0.6, 4, 4)
-#dm6 = aa_py_dm(1200, 1500, 0.8, 4, 4)
-#dm7 = aa_py_dm(1500, 2000, 1.0, 4, 4)
-#dm8 = aa_py_dm(2000, 3000, 2.0, 8, 8)
-#dm_list = np.array([dm1, dm2, dm3, dm4, dm5, dm6, dm7],dtype=aa_py_dm)
-dm_list = np.array([dm1],dtype=aa_py_dm)
+dm1 = aa_py_dm(0, 150, 0.1, 1, 1)
+dm2 = aa_py_dm(150, 300, 0.2, 1, 1)
+dm3 = aa_py_dm(300, 500, 0.25, 1, 1)
+dm4 = aa_py_dm(500, 900, 0.4, 2, 2)
+dm5 = aa_py_dm(900, 1200, 0.6, 4, 4)
+dm6 = aa_py_dm(1200, 1500, 0.8, 4, 4)
+dm7 = aa_py_dm(1500, 2000, 1.0, 4, 4)
+dm8 = aa_py_dm(2000, 3000, 2.0, 8, 8)
+dm_list = np.array([dm1, dm2, dm3, dm4, dm5, dm6, dm7],dtype=aa_py_dm)
+#dm_list = np.array([dm1],dtype=aa_py_dm)
 
 # Create ddtr_plan
 ddtr_plan = aa_py_ddtr_plan(dm_list)
@@ -58,7 +58,7 @@ sigma_cutoff = 6
 sigma_constant = 4.0
 max_boxcar_width_in_sec = 0.5
 # 0 -- peak_find; 1 -- threshold; 2 -- peak_filtering
-enable_threshold_candidate_selection = 2
+enable_threshold_candidate_selection = 1
 enable_msd_baseline_noise = True
 
 analysis_plan = aa_py_analysis_plan(sigma_cutoff, sigma_constant, max_boxcar_width_in_sec, enable_threshold_candidate_selection, enable_msd_baseline_noise)
@@ -70,7 +70,7 @@ pipeline_options.output_dmt = False
 pipeline_options.copy_ddtr_data_to_host = False;
 
 # Select GPU card number on this machine
-card_number = 1
+card_number = 0
 
 # Create pipeline
 pipeline = aa_py_pipeline(pipeline_components, pipeline_options, metadata, input_buffer, card_number)
