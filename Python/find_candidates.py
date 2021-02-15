@@ -42,10 +42,15 @@ dm8 = aa_py_dm(2000, 3000, 2.0, 8, 8)
 dm_list = np.array([dm1, dm2, dm3, dm4, dm5, dm6, dm7],dtype=aa_py_dm)
 #dm_list = np.array([dm1],dtype=aa_py_dm)
 
+# define your bandpass -- example
+#bandpass = np.full(metadata.m_nchans,127.5, dtype=ctypes.c_float)
+
 # Create ddtr_plan
 ddtr_plan = aa_py_ddtr_plan(dm_list)
 enable_msd_baseline_noise=True
 ddtr_plan.set_enable_msd_baseline_noise(enable_msd_baseline_noise)
+# bind your bandpass to AA
+#ddtr_plan.bind_bandpass_normalization(bandpass,metadata.m_nchans)
 ddtr_plan.print_info()
 
 # Set up pipeline components
