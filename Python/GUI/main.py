@@ -4,39 +4,103 @@ import PySimpleGUI as sg
 #This imports for OS commands
 import os
 
+number_of_ranges = 3
+
+heading_ranges_labels = ["From", "To", "DM Step", "Binning", "Downsample"]
+header_dmplan = [ [sg.Text(' ')] + [sg.Text(h)] for h in heading_ranges_labels ]
+input_DMrows = [[sg.Input(size=(6,1), pad=(0,0)) for col in range(len(header_dmplan))] for row in range(number_of_ranges)]
+
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 sg.theme('DarkAmber')
 
-layout = [  [sg.Text('Select filterbank: '), sg.Input(size=(30,1)), sg.FileBrowse(key='filterbank')],
-            [sg.Text('DM trials range')],
-            [sg.Text('from: '), sg.InputText(size=(6,1),key="from0"), 
-             sg.Text('to: '),   sg.InputText(size=(6,1),key="to0"), 
-             sg.Text('with DM step'), sg.InputText(size=(6,1),key="dmstep0")
+left_layout = [  [
+             sg.Text('Select filterbank: '), 
+             sg.Input(size=(30,1),
+                      key="-filterbank-",
+                      default_text="/home/jnovotny/filterbanks/ska-mid-b2-small.fil"), 
+             sg.FileBrowse(key='-filterbankbrowse-',
+                            initial_folder="/home/jnovotny/filterbanks/")
             ],
-            [sg.Text(size=(40,1), key='-OUTPUT-')],
-            [sg.Button('Ok'), sg.Button('Cancel')],
-            [sg.Button('Launch')]
+            [header_dmplan, input_DMrows],
+            [sg.Text('DM trials range')],
+            [
+             sg.Text('from: '), 
+             sg.InputText(size=(6,1), 
+                          key="-from0-",
+                          default_text="0"), 
+             sg.Text('to: '),
+             sg.InputText(size=(6,1), 
+                          key="-to0-",
+                          default_text="150"), 
+             sg.Text('with DM step'), 
+             sg.InputText(size=(6,1), 
+                          key="-dmstep0-",
+                          default_text="0.1"),
+             sg.Text("downsample"),
+             sg.InputText(size=(2,1),
+                          key="-bin0-",
+                          default_text="1"),
+             sg.Text("up"),
+             sg.InputText(size=(2,1),
+                          key="-binto0-",
+                          default_text="1")
+            ],
+            [
+             sg.Text(size=(40,1), 
+                     key='-OUTPUT-')
+            ],
+            [
+             sg.Button('Ok'), 
+             sg.Button('Cancel')
+            ],
+            [sg.Button('Launch')],
+            [sg.Output(size=(60,15))]
         ]
+
+right_layout = [
+            [sg.Text("Choose an image from list on left:")],
+            [sg.Text(size=(40, 1), key="-TEXT-")],
+            [sg.Image(key="-IMAGE-")]
+        ]
+
+layout = [
+            [
+                sg.Column(left_layout),
+                sg.VSeparator(),
+                sg.Column(right_layout)
+            ]
+         ]
+
+
+def status_print(status):
+    print(status)
 
 def create_input_files():
     f = open("astroaccelerate_input_file.txt","w")
+    f_append = open("minimal_input_file.txt", "r")
     f.write("range\t" + 
-            values['from0'] + "\t" + 
-            values['to0'] + "\t" +
-            values['dmstep0'] + "\n"
+            values['-from0-'] + "\t" + 
+            values['-to0-'] + "\t" +
+            values['-dmstep0-'] + "\t" + 
+            values['-bin0-'] + "\t" +
+            values['-binto0-'] + "\n"
             )
-    f.write("file" + "\t" + values['filterbank'])
+    f.write(f_append.read())
+    f.write("file" + "\t" + values['-filterbank-'])
     f.close()
+    f_append.close()
     #print('You entered ', values['from0'], values['to0'], values['dmstep0'])
 
 
 def AstroAccelerate_launch():
     status = "Create AA input file"
+    status_print(status)
     print("Starting AstroAccelerate")
     create_input_files()
-    status = "Starting AA" 
-    cmd = 'cat astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
+    status = "Starting AA"
+    status_print(status)
+    cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
     AA_return_value = os.system(cmd)
     print("\nAstroAccelerate finished with exit code: ", AA_return_value)
 
@@ -52,8 +116,10 @@ if __name__ == '__main__':
             break
         if event == 'Launch':
             AstroAccelerate_launch()
-        window['-OUTPUT-'].update("Range 0: " + values['from0'] + 
-                " to " + values['to0'] + 
-                " with DM step " + values['dmstep0'], text_color='red')
+        window['-OUTPUT-'].update("Range 0: " + values['-from0-'] + 
+                " to " + values['-to0-'] + 
+                " with DM step " + values['-dmstep0-'], text_color='red')
 
     window.close()
+
+
