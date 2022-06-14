@@ -28,6 +28,10 @@ input_DMrow = [
         for row in range(number_of_ranges)
 ]
 
+std_output_tab = [
+    [sg.Multiline(size=(110, 30), key="-multi-", reroute_stdout=True)]
+]
+
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
@@ -62,11 +66,19 @@ right_layout = [
             [sg.Image(key="-IMAGE-")]
         ]
 
-layout = [
-            [
+tab_user = [[
                 sg.Column(left_layout),
                 sg.VSeparator(),
                 sg.Column(right_layout)
+]]
+
+layout = [
+            [
+                sg.TabGroup(
+                    [[sg.Tab("Setup", tab_user),
+                      sg.Tab("Output LOG", std_output_tab)
+                    ]]
+                )
             ]
          ]
 
