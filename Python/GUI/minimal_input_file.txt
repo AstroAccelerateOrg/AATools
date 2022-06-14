@@ -4,7 +4,6 @@ sigma_constant  3.0
 max_boxcar_width_in_sec 0.5
 periodicity_sigma_cutoff 20
 periodicity_harmonics 32
--analysis
 set_bandpass_average
 -acceleration
 -output_ffdot_plan

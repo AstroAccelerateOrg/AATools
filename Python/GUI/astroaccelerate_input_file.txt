@@ -1,13 +1,13 @@
 range	0	150	0.1	1	1
 range	150	300	0.2	1	1
 range	300	500	0.25	1	1
+analysis
 sigma_cutoff	6
 sigma_constant  3.0
 -selected_card_id 1
 max_boxcar_width_in_sec 0.5
 periodicity_sigma_cutoff 20
 periodicity_harmonics 32
--analysis
 set_bandpass_average
 -acceleration
 -output_ffdot_plan

@@ -20,6 +20,7 @@ defaul_ranges = [ [0,150,0.1,1],
                   [2000, 3000, 2.0, 8]
 ]
 
+###### DM survey plan Group #############
 heading_ranges_labels = ['Range', 'From', 'To', 'DM_Step', 'Binning']
 input_DMrow = [
     [sg.Text("Range " + str(row), pad=(1,0),size=(7,1))] +
@@ -27,20 +28,28 @@ input_DMrow = [
      for col in range(len(heading_ranges_labels)-1)]
         for row in range(number_of_ranges)
 ]
+#########################################
 
-std_output_tab = [
-    [sg.Multiline(size=(110, 30), key="-multi-", reroute_stdout=True)]
+############### Component #################
+aa_component = [
+    [
+        sg.Checkbox("Analysis", default=False, key='-com_analysis-', size=(12,1)),
+        sg.Checkbox("Zero DM", default=False, key='-com_zero-', size=(12,1))
+    ],
+    [
+        sg.Checkbox("Acceleration", default=False, key='-com_acceleration-', size=(12,1)),
+        sg.Checkbox("Periodicity", default=False, key='-com_periodicity-', size=(12,1))
+    ]
 ]
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+#########################################
 
-
+########## user tab group
 left_layout = [  [
-             sg.Text('Select filterbank: '), 
+             sg.Text('Select filterbank: '),
              sg.Input(size=(30,1),
                       key="-filterbank-",
-                      default_text="/home/jnovotny/filterbanks/ska-mid-b2-small.fil"), 
+                      default_text="/home/jnovotny/filterbanks/ska-mid-b2-small.fil"),
              sg.FileBrowse(key='-filterbankbrowse-',
                             initial_folder="/home/jnovotny/filterbanks/")
             ],
@@ -48,12 +57,14 @@ left_layout = [  [
                 [sg.Text(h, size=(7,1), pad=(1,0), justification="left") for h in heading_ranges_labels],
                 [sg.Column(input_DMrow,pad=(1,0))]
                 ])],
+            [sg.Frame("Components:", aa_component)
+             ],
             [
-             sg.Text(size=(40,1), 
+             sg.Text(size=(40,1),
                      key='-OUTPUT-')
             ],
             [
-             sg.Button('Ok'), 
+             sg.Button('Ok'),
              sg.Button('Cancel')
             ],
             [sg.Button('Launch')],
@@ -65,13 +76,23 @@ right_layout = [
             [sg.Text(size=(40, 1), key="-TEXT-")],
             [sg.Image(key="-IMAGE-")]
         ]
+##############################
 
+#### output tab #############
+std_output_tab = [
+    [sg.Multiline(size=(110, 30), key="-multi-", reroute_stdout=False)]
+]
+#############################
+
+### user tab ###
 tab_user = [[
                 sg.Column(left_layout),
                 sg.VSeparator(),
                 sg.Column(right_layout)
 ]]
+################
 
+################## final layout #########################
 layout = [
             [
                 sg.TabGroup(
@@ -81,6 +102,7 @@ layout = [
                 )
             ]
          ]
+##############################################################
 
 def status_print(status):
     print(status)
@@ -96,6 +118,8 @@ def create_input_files():
                 values[f'-Binning{rows}-'] + "\t" +
                 values[f'-Binning{rows}-'] + "\n"
         )
+    if (values['-com_analysis-'] == True):
+        f.write("analysis" + "\n")
     f.write(f_append.read())
     f.write("file" + "\t" + values['-filterbank-'])
     f.close()
