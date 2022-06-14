@@ -78,11 +78,11 @@ def create_input_files():
     f_append = open("minimal_input_file.txt", "r")
     for rows in range(number_of_ranges):
         f.write("range\t" +
-                values[f'From{rows}'] + "\t" +
-                values[f'To{rows}'] + "\t" +
-                values[f'DM_Step{rows}'] + "\t" +
-                values[f'Binning{rows}'] + "\t" +
-                values[f'Binning{rows}'] + "\n"
+                values[f'-From{rows}-'] + "\t" +
+                values[f'-To{rows}-'] + "\t" +
+                values[f'-DM_Step{rows}-'] + "\t" +
+                values[f'-Binning{rows}-'] + "\t" +
+                values[f'-Binning{rows}-'] + "\n"
         )
     f.write(f_append.read())
     f.write("file" + "\t" + values['-filterbank-'])
@@ -97,9 +97,9 @@ def AstroAccelerate_launch():
     create_input_files()
     status = "Starting AA"
     status_print(status)
-    #cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
-    #AA_return_value = os.system(cmd)
-    #print("\nAstroAccelerate finished with exit code: ", AA_return_value)
+    cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
+    AA_return_value = os.system(cmd)
+    print("\nAstroAccelerate finished with exit code: ", AA_return_value)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
