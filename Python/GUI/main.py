@@ -117,6 +117,7 @@ def AstroAccelerate_launch():
 if __name__ == '__main__':
     # Create the Window
     window = sg.Window('AstroAccelerate -- Simple GUI -- testing ', layout).Finalize()
+#    window['-multi-'].reroute_stdout_to_here()
 #   window.Maximize()
 
     while True:
