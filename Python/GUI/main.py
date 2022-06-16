@@ -1,8 +1,16 @@
 # This is a sample Python script.
 import PySimpleGUI as sg
 
+
 #This imports for OS commands
 import os
+from aa_plot import *
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.cm as cm
+matplotlib.use('TkAgg')
 
 sg.theme('DarkAmber')
 
@@ -71,12 +79,17 @@ left_layout = [  [
             [sg.Output(size=(60,15))]
         ]
 
+fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
+#fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+
+
 right_layout = [
             [sg.Text("Choose an image from list on left:")],
             [sg.Text(size=(40, 1), key="-TEXT-")],
-            [sg.Image(key="-IMAGE-")]
+            [sg.Canvas(key="-IMAGE-")]
         ]
 ##############################
+
 
 #### output tab #############
 std_output_tab = [
@@ -107,6 +120,16 @@ layout = [
 def status_print(status):
     print(status)
 
+def plot_graph(candidates):
+    x = list(zip(*candidates))[0]
+    y = list(zip(*candidates))[1]
+    z = list(zip(*candidates))[2]
+    final = fig.add_subplot(projection='3d')
+    final.scatter(x, y, z, c = z, cmap='coolwarm')
+    final.set_xlabel('test')
+    #fig.add_subplot(111, projection='3d').scatter(x, y, z)
+
+
 def create_input_files():
     f = open("astroaccelerate_input_file.txt","w")
     f_append = open("minimal_input_file.txt", "r")
@@ -133,9 +156,21 @@ def AstroAccelerate_launch():
     create_input_files()
     status = "Starting AA"
     status_print(status)
-    cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
-    AA_return_value = os.system(cmd)
-    print("\nAstroAccelerate finished with exit code: ", AA_return_value)
+    #cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
+    #AA_return_value = os.system(cmd)
+    #print("\nAstroAccelerate finished with exit code: ", AA_return_value)
+    name_file = "analysed-t_0.00-dm_0.00-153.60.dat"
+    #name_file = "analysed-t_0.00-dm_153.60-307.20.dat"
+    candidates = read_file_analysis(name_file)
+    plot_graph(candidates)
+
+    #print(x)
+
+def draw_figure(canvas, figure):
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    return figure_canvas_agg
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -143,6 +178,7 @@ if __name__ == '__main__':
     window = sg.Window('AstroAccelerate -- Simple GUI -- testing ', layout).Finalize()
 #    window['-multi-'].reroute_stdout_to_here()
 #   window.Maximize()
+#    fig_canvas_agg = draw_figure(window['-IMAGE-'].TKCanvas, fig)
 
     while True:
         event, values = window.read()
@@ -150,11 +186,9 @@ if __name__ == '__main__':
             break
         if event == 'Launch':
             AstroAccelerate_launch()
+            draw_figure(window['-IMAGE-'].TKCanvas, fig)
         if event == 'Ok':
             print("Ahoj" + values['-From0-'])
-        #window['-OUTPUT-'].update("Range 0: " + values['-from0-'] +
-        #        " to " + values['-to0-'] +
-        #        " with DM step " + values['-dmstep0-'], text_color='red')
 
     window.close()
 
