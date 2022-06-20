@@ -1,15 +1,18 @@
 # This is a sample Python script.
 import PySimpleGUI as sg
 
-
 #This imports for OS commands
 import os
 from aa_plot import *
+from aa_tools import *
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.cm as cm
+import glob
+
 matplotlib.use('TkAgg')
 
 sg.theme('DarkAmber')
@@ -79,21 +82,23 @@ left_layout = [  [
             [sg.Output(size=(60,15))]
         ]
 
-fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
+fig_all = matplotlib.figure.Figure(figsize=(8, 5), tight_layout=True, dpi=120)
+fig_3d =  matplotlib.figure.Figure(figsize=(5, 5), dpi=120)
 #fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
 
 
 right_layout = [
-            [sg.Text("Choose an image from list on left:")],
-            [sg.Text(size=(40, 1), key="-TEXT-")],
+            [sg.Text(key="-plot_text-",text="No analysis done. Click to Launch button.")],
+#            [sg.Text(size=(40, 1), key="-TEXT-")],
             [sg.Canvas(key="-IMAGE-")]
         ]
 ##############################
 
 
-#### output tab #############
+#### plot tab #############
 std_output_tab = [
-    [sg.Multiline(size=(110, 30), key="-multi-", reroute_stdout=False)]
+#    [sg.Multiline(size=(110, 30), key="-multi-", reroute_stdout=False)],
+    [sg.Canvas(key="-IMAGE2-")]
 ]
 #############################
 
@@ -110,7 +115,7 @@ layout = [
             [
                 sg.TabGroup(
                     [[sg.Tab("Setup", tab_user),
-                      sg.Tab("Output LOG", std_output_tab)
+                      sg.Tab("Graph plots", std_output_tab)
                     ]]
                 )
             ]
@@ -121,12 +126,47 @@ def status_print(status):
     print(status)
 
 def plot_graph(candidates):
-    x = list(zip(*candidates))[0]
-    y = list(zip(*candidates))[1]
-    z = list(zip(*candidates))[2]
-    final = fig.add_subplot(projection='3d')
-    final.scatter(x, y, z, c = z, cmap='coolwarm')
-    final.set_xlabel('test')
+    x = list(zip(*candidates))[0] # dm channel
+    y = list(zip(*candidates))[1] # time
+    z = list(zip(*candidates))[2] # SNR
+    pw = list(zip(*candidates))[3] # pulse width 
+    final = fig_3d.add_subplot(projection='3d')
+    final.scatter(y, x, z, c = z, cmap='coolwarm')
+    final.set_xlabel('Time')
+    final.set_ylabel('DM Channel')
+    final.set_zlabel('SNR')
+
+    final1 = fig_all.add_subplot(241)
+    final1.scatter(y, x, c = pw, cmap='coolwarm')
+    final1.set_xlabel('Time')
+    final1.set_ylabel('DM channel')
+
+    final2 = fig_all.add_subplot(242)
+    final2.hist(x)
+    final2.set_xlabel('DM Channel')
+    final2.set_ylabel('# Candidates')
+#   final2.scatter(hist1)
+#   final2.set_xlabel('DM Channel')
+
+    final3 = fig_all.add_subplot(243)
+    final3.scatter(x, z, c = pw, cmap='coolwarm')
+    final3.set_xlabel('DM Channel')
+    final3.set_ylabel('SNR')
+
+    final4 = fig_all.add_subplot(244)
+    final4.hist(z)
+    final4.set_xlabel('SNR')
+    final4.set_ylabel('# Candidates')
+
+    final5 = fig_all.add_subplot(212)
+    final5.scatter(y, x, c = z, cmap='coolwarm')
+    final5.set_xlabel('Time')
+    final5.set_ylabel('DM channel')
+
+#    fig_all.tight_layout()
+
+#    axs[0].set_xlabel('test')
+#    axs[1].scatter(y, x, z, c = z, cmap='coolwarm')
     #fig.add_subplot(111, projection='3d').scatter(x, y, z)
 
 
@@ -156,20 +196,17 @@ def AstroAccelerate_launch():
     create_input_files()
     status = "Starting AA"
     status_print(status)
-    #cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
-    #AA_return_value = os.system(cmd)
-    #print("\nAstroAccelerate finished with exit code: ", AA_return_value)
-    name_file = "analysed-t_0.00-dm_0.00-153.60.dat"
-    #name_file = "analysed-t_0.00-dm_153.60-307.20.dat"
-    candidates = read_file_analysis(name_file)
+
+    analysed_file_data = sorted(glob.glob("*ana*.dat"))
+    candidates = read_file_analysis(analysed_file_data)
     plot_graph(candidates)
 
-    #print(x)
 
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=True)
+#    figure_canvas_agg.get_tk_widget().place(anchor='center')
     figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
 # Press the green button in the gutter to run the script.
@@ -186,7 +223,9 @@ if __name__ == '__main__':
             break
         if event == 'Launch':
             AstroAccelerate_launch()
-            draw_figure(window['-IMAGE-'].TKCanvas, fig)
+            draw_figure(window['-IMAGE-'].TKCanvas, fig_3d)
+            draw_figure(window['-IMAGE2-'].TKCanvas, fig_all)
+            window['-plot_text-'].update('Analysis done.')
         if event == 'Ok':
             print("Ahoj" + values['-From0-'])
 
