@@ -17,6 +17,8 @@ matplotlib.use('TkAgg')
 
 sg.theme('DarkAmber')
 
+plot1 = None
+
 # number of ranges for the plan
 number_of_ranges = 3
 
@@ -81,11 +83,6 @@ left_layout = [  [
             [sg.Button('Launch')],
             [sg.Output(size=(60,15))]
         ]
-
-fig_all = matplotlib.figure.Figure(figsize=(8, 5), tight_layout=True, dpi=120)
-fig_3d =  matplotlib.figure.Figure(figsize=(5, 5), dpi=120)
-#fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
-
 
 right_layout = [
             [sg.Text(key="-plot_text-",text="No analysis done. Click to Launch button.")],
@@ -189,6 +186,11 @@ def create_input_files():
     f_append.close()
     #print('You entered ', values['from0'], values['to0'], values['dmstep0'])
 
+def AstroAccelerate_run():
+    cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
+    AA_return_value = os.system(cmd)
+    print("\nAstroAccelerate finished with exit code: ", AA_return_value)
+
 def AstroAccelerate_launch():
     status = "Create AA input file"
     status_print(status)
@@ -196,35 +198,47 @@ def AstroAccelerate_launch():
     create_input_files()
     status = "Starting AA"
     status_print(status)
-
+#    AstroAccelerate_run()
     analysed_file_data = sorted(glob.glob("*ana*.dat"))
     candidates = read_file_analysis(analysed_file_data)
     plot_graph(candidates)
 
-
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=True)
-#    figure_canvas_agg.get_tk_widget().place(anchor='center')
     figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+#    figure_canvas_agg.get_tk_widget().place(anchor='center')
     return figure_canvas_agg
+
+
+fig_all = matplotlib.figure.Figure(figsize=(8, 5), tight_layout=True, dpi=120)
+fig_3d =  matplotlib.figure.Figure(figsize=(5, 5), dpi=120)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # Create the Window
-    window = sg.Window('AstroAccelerate -- Simple GUI -- testing ', layout).Finalize()
+    window = sg.Window('AstroAccelerate -- Simple GUI -- testing ', 
+                        layout,
+                        resizable=True,
+                        element_justification="right")#.Finalize()
 #    window['-multi-'].reroute_stdout_to_here()
 #   window.Maximize()
 #    fig_canvas_agg = draw_figure(window['-IMAGE-'].TKCanvas, fig)
 
     while True:
         event, values = window.read()
-        if event == sg.WIN_CLOSED or event == 'Cancel':  # if user closes window or clicks cancel
+        # if user closes window or clicks cancel
+        if event == sg.WIN_CLOSED or event == 'Cancel':
             break
         if event == 'Launch':
             AstroAccelerate_launch()
-            draw_figure(window['-IMAGE-'].TKCanvas, fig_3d)
-            draw_figure(window['-IMAGE2-'].TKCanvas, fig_all)
+            if plot1 is not None:
+                print("plot  1 none")
+                plot1.get_tk_widget().forget()
+                plot2.get_tk_widget().forget()
+#                fig3d_all.clf()
+            plot1 = draw_figure(window['-IMAGE-'].TKCanvas, fig_3d)
+            plot2 = draw_figure(window['-IMAGE2-'].TKCanvas, fig_all)
             window['-plot_text-'].update('Analysis done.')
         if event == 'Ok':
             print("Ahoj" + values['-From0-'])
