@@ -46,7 +46,7 @@ input_DMrow = [
 ############### Component #################
 aa_component = [
     [
-        sg.Checkbox("Analysis", default=False, key='-com_analysis-', size=(12,1)),
+        sg.Checkbox("Analysis", default=False, key='-com_analysis-', enable_events=True, size=(12,1)),
         sg.Checkbox("Zero DM", default=False, key='-com_zero-', size=(12,1))
     ],
     [
@@ -56,6 +56,16 @@ aa_component = [
 ]
 
 #########################################
+
+############ analysis frame components #####
+
+aa_analysis_frame = [
+        [
+            sg.Text("Threshold:", background_color="green", expand_y=True),
+            sg.Slider(range=(0, 10), orientation='h', size=(30,20), key='slide_threshold', default_value=6, expand_x = True, resolution=0.2)
+        ]
+]
+############################################
 
 ########## user tab group
 left_layout = [  [
@@ -70,8 +80,8 @@ left_layout = [  [
                 [sg.Text(h, size=(7,1), pad=(1,0), justification="left") for h in heading_ranges_labels],
                 [sg.Column(input_DMrow,pad=(1,0))]
                 ])],
-            [sg.Frame("Components:", aa_component)
-             ],
+            [sg.Frame("Components:", aa_component)],
+            [sg.Frame("Analysis setup:", aa_analysis_frame, key="-analysis_setup-", visible=False, expand_x = True)],
             [
              sg.Text(size=(40,1),
                      key='-OUTPUT-')
@@ -128,7 +138,7 @@ def plot_graph(candidates):
     z = list(zip(*candidates))[2] # SNR
     pw = list(zip(*candidates))[3] # pulse width 
     final = fig_3d.add_subplot(projection='3d')
-    final.scatter(y, x, z, c = z, cmap='coolwarm')
+    final.scatter(x, y, z, c = z, cmap='coolwarm')
     final.set_xlabel('Time')
     final.set_ylabel('DM Channel')
     final.set_zlabel('SNR')
@@ -180,11 +190,16 @@ def create_input_files():
         )
     if (values['-com_analysis-'] == True):
         f.write("analysis" + "\n")
+        f.write("sigma_cutoff\t" + str(values['slide_threshold']) + "\n")
     f.write(f_append.read())
     f.write("file" + "\t" + values['-filterbank-'])
     f.close()
     f_append.close()
     #print('You entered ', values['from0'], values['to0'], values['dmstep0'])
+
+def Clean_files():
+    cmd = 'rm -f *.dat'
+    os.system(cmd)
 
 def AstroAccelerate_run():
     cmd = './astro-accelerate astroaccelerate_input_file.txt' #'./astro-accelerate ska_test_file-small.txt'
@@ -198,7 +213,8 @@ def AstroAccelerate_launch():
     create_input_files()
     status = "Starting AA"
     status_print(status)
-#    AstroAccelerate_run()
+    Clean_files()
+    AstroAccelerate_run()
     analysed_file_data = sorted(glob.glob("*ana*.dat"))
     candidates = read_file_analysis(analysed_file_data)
     plot_graph(candidates)
@@ -230,6 +246,13 @@ if __name__ == '__main__':
         # if user closes window or clicks cancel
         if event == sg.WIN_CLOSED or event == 'Cancel':
             break
+        if event == '-com_analysis-':
+            if values['-com_analysis-'] == True:
+                window['-analysis_setup-'].update(visible=True)
+#               window['-analysis_setup-'].unhide_row()
+            else:
+                window['-analysis_setup-'].update(visible=False)
+#               window['-analysis_setup-'].hide_row()
         if event == 'Launch':
             AstroAccelerate_launch()
             if plot1 is not None:
