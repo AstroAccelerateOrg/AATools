@@ -35,9 +35,32 @@ defaul_ranges = [ [0,150,0.1,1],
 
 ###### DM survey plan Group #############
 heading_ranges_labels = ['Range', 'From', 'To', 'DM_Step', 'Binning']
+def add_row_dmplan(i):
+    return    [
+                [sg.Text("Range " + str(i), pad=(1,0),size=(7,1))] + 
+                [
+                    sg.Input(
+                        size=(8,1), 
+                        pad=(1,0),
+                        key=f'-{heading_ranges_labels[col+1]}{i}-',
+                        default_text=defaul_ranges[i][col],
+                        expand_x=True
+                    ) for col in range(len(heading_ranges_labels)-1)
+                ]
+            ]
+#    return [
+#            [sg.Text("Range " + str(i), pad=(1,0),size=(7,1))] + [sg.Input(size=(8,1), pad=(1,0), key=f'-{heading_ranges_labels[col+1]}{i}-', default_text=defaul_ranges[i][col]) 
+#                    for col in range(len(heading_ranges_labels)-1)]
+#        ]
+    
 input_DMrow = [
     [sg.Text("Range " + str(row), pad=(1,0),size=(7,1))] +
-    [sg.Input(size=(8,1), pad=(1,0),key=f'-{heading_ranges_labels[col+1]}{row}-', default_text=defaul_ranges[row][col])
+    [sg.Input(
+        size=(8,1), 
+        pad=(1,0),
+        key=f'-{heading_ranges_labels[col+1]}{row}-', 
+        default_text=defaul_ranges[row][col],
+        expand_x=True)
      for col in range(len(heading_ranges_labels)-1)]
         for row in range(number_of_ranges)
 ]
@@ -88,12 +111,14 @@ left_layout = [  [
                 #sg.Slider(range=(1,15), key="-number_of_ranges-", default_value=3, orientation='h', resolution=1)
 #                ],
             [sg.Frame("DM plan:", [
-                [sg.Text(h, size=(7,1), pad=(1,0), justification="left") for h in heading_ranges_labels],
-                [sg.Column(input_DMrow,pad=(1,0))]
+                    [sg.Text(h, size=(7,1), pad=(1,0), justification="left", expand_x=True) for h in heading_ranges_labels],
+                    [sg.Column(input_DMrow, pad=(1,0), key="-test-", expand_x=True)],
+                    [sg.Button("Add row", key="-add_dm-")]
                 ],
-                key="-DM_plan_frame-")],
+                key="-DM_plan_frame-",
+                expand_x=True)],
             [sg.Frame("Components:", aa_component)],
-            [sg.Frame("Analysis setup:", aa_analysis_frame, key="-analysis_setup-", visible=False, expand_x = True)],
+            [sg.Frame("Analysis setup:", aa_analysis_frame, key="-analysis_setup-", visible=False, expand_x=True)],
             [
              sg.Text(size=(40,1),
                      key='-OUTPUT-')
@@ -285,10 +310,10 @@ if __name__ == '__main__':
         # if user closes window or clicks cancel
         if event == sg.WIN_CLOSED or event == 'Cancel':
             break
-        if event == '-number_of_ranges-':
-            print(values['-number_of_ranges-'])
-            number_of_ranges=int(values['-number_of_ranges-'])
-            window['-DM_plan_frame-'].update()
+        if event == '-add_dm-':
+            if number_of_ranges < 8:
+                window.extend_layout(window["-test-"],add_row_dmplan(number_of_ranges))
+                number_of_ranges += 1
         if event == '-com_analysis-':
             if values['-com_analysis-'] == True:
                 window['-analysis_setup-'].update(visible=True)
@@ -303,6 +328,7 @@ if __name__ == '__main__':
                 plot1.get_tk_widget().forget()
                 plot2.get_tk_widget().forget()
 #                fig3d_all.clf()
+                plt.clf()
             plot1 = draw_figure(window['-IMAGE-'].TKCanvas, fig_3d)
             plot2 = draw_figure(window['-IMAGE2-'].TKCanvas, fig_all)
             window['-plot_text-'].update('Analysis done.')
