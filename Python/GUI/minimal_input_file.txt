@@ -13,7 +13,6 @@ set_bandpass_average
 -zero_dm_with_outliers
 -rfi
 -oldrfi
-threshold
 -baselinenoise
 -fdas_custom_fft
 -fdas_inbin

@@ -61,6 +61,11 @@ aa_component = [
 
 aa_analysis_frame = [
         [
+            sg.Radio("Peak find", "Candidate_selection", default=False, key="-candidate_selection_0-"),
+            sg.Radio("Threshold", "Candidate_selection", default=True, key="-candidate_selection_1-"),
+            sg.Radio("Peak filtering", "Candidate_selection", key="-candidate_selection_2-", default=False)
+        ],
+        [
             sg.Text("Threshold:", background_color="green", expand_y=True),
             sg.Slider(range=(0, 10), orientation='h', size=(30,20), key='slide_threshold', default_value=6, expand_x = True, resolution=0.2)
         ]
@@ -72,14 +77,21 @@ left_layout = [  [
              sg.Text('Select filterbank: '),
              sg.Input(size=(30,1),
                       key="-filterbank-",
-                      default_text="/home/jnovotny/filterbanks/ska-mid-b2-small.fil"),
+                      default_text="/home/jnovotny/filterbanks/ska-mid-b2-small.fil",
+                      expand_x=True),
              sg.FileBrowse(key='-filterbankbrowse-',
-                            initial_folder="/home/jnovotny/filterbanks/")
+                            initial_folder="/home/jnovotny/filterbanks/"),
             ],
+#            [
+#                sg.Text("Number of ranges: "), 
+#                sg.Input(key = "-number_of_ranges-", justification="right", size=(4,1), default_text = number_of_ranges, enable_events = True)
+                #sg.Slider(range=(1,15), key="-number_of_ranges-", default_value=3, orientation='h', resolution=1)
+#                ],
             [sg.Frame("DM plan:", [
                 [sg.Text(h, size=(7,1), pad=(1,0), justification="left") for h in heading_ranges_labels],
                 [sg.Column(input_DMrow,pad=(1,0))]
-                ])],
+                ],
+                key="-DM_plan_frame-")],
             [sg.Frame("Components:", aa_component)],
             [sg.Frame("Analysis setup:", aa_analysis_frame, key="-analysis_setup-", visible=False, expand_x = True)],
             [
@@ -176,11 +188,24 @@ def plot_graph(candidates):
 #    axs[1].scatter(y, x, z, c = z, cmap='coolwarm')
     #fig.add_subplot(111, projection='3d').scatter(x, y, z)
 
+def dmplan_control():
+    valid_rows = 0
+    for rows in range(number_of_ranges):
+        if (bool(values[f'-From{rows}-']) == False):
+            print("From is empty...stoping")
+            break
+        valid_rows = valid_rows + 1
+#    print("Find only " + str(valid_rows) + " valid lines of DM plan.")
+    return valid_rows
+
 
 def create_input_files():
     f = open("astroaccelerate_input_file.txt","w")
     f_append = open("minimal_input_file.txt", "r")
     for rows in range(number_of_ranges):
+        if (bool(values[f'-From{rows}-']) == False):
+            print("From is empty...stoping")
+            break
         f.write("range\t" +
                 values[f'-From{rows}-'] + "\t" +
                 values[f'-To{rows}-'] + "\t" +
@@ -191,6 +216,14 @@ def create_input_files():
     if (values['-com_analysis-'] == True):
         f.write("analysis" + "\n")
         f.write("sigma_cutoff\t" + str(values['slide_threshold']) + "\n")
+        if (values['-candidate_selection_0-'] == True):
+            print("Peak find")
+        if (values['-candidate_selection_1-'] == True):
+            print("Threshold")
+            f.write("threshold\n")
+        if (values['-candidate_selection_2-'] == True):
+            print("Peak filtering")
+            f.write("peak_find\n")
     f.write(f_append.read())
     f.write("file" + "\t" + values['-filterbank-'])
     f.close()
@@ -210,14 +243,20 @@ def AstroAccelerate_launch():
     status = "Create AA input file"
     status_print(status)
     print("Starting AstroAccelerate")
-    create_input_files()
-    status = "Starting AA"
-    status_print(status)
-    Clean_files()
-    AstroAccelerate_run()
-    analysed_file_data = sorted(glob.glob("*ana*.dat"))
-    candidates = read_file_analysis(analysed_file_data)
-    plot_graph(candidates)
+    print("Control of the DM plan")
+    valid_r = dmplan_control()
+    if (valid_r > 0):
+        create_input_files()
+        status = "Starting AA"
+        status_print(status)
+        Clean_files()
+        AstroAccelerate_run()
+        if (values['-com_analysis-'] == True):
+            analysed_file_data = sorted(glob.glob("*ana*.dat"))
+            candidates = read_file_analysis(analysed_file_data)
+            plot_graph(candidates)
+    else:
+        print("Something is wrong with the DM plan.")
 
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
@@ -236,9 +275,9 @@ if __name__ == '__main__':
     window = sg.Window('AstroAccelerate -- Simple GUI -- testing ', 
                         layout,
                         resizable=True,
-                        element_justification="right")#.Finalize()
+                        element_justification="center").Finalize()
 #    window['-multi-'].reroute_stdout_to_here()
-#   window.Maximize()
+#    window.Maximize()
 #    fig_canvas_agg = draw_figure(window['-IMAGE-'].TKCanvas, fig)
 
     while True:
@@ -246,6 +285,10 @@ if __name__ == '__main__':
         # if user closes window or clicks cancel
         if event == sg.WIN_CLOSED or event == 'Cancel':
             break
+        if event == '-number_of_ranges-':
+            print(values['-number_of_ranges-'])
+            number_of_ranges=int(values['-number_of_ranges-'])
+            window['-DM_plan_frame-'].update()
         if event == '-com_analysis-':
             if values['-com_analysis-'] == True:
                 window['-analysis_setup-'].update(visible=True)
